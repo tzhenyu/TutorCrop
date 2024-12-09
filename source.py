@@ -104,7 +104,7 @@ def process_image(image, erode_iterations):
     return cnts
 
 def main():
-    st.set_page_config(page_title="Tutorial PDF Cropper",layout="wide")
+    st.set_page_config(page_title="Tutorial PDF Cropper",layout="wide",initial_sidebar_state="expanded")
 
 
     col1, col2 = st.columns(2)
