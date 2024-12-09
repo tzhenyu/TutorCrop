@@ -128,7 +128,7 @@ def main():
         st.sidebar.write("Made by [tzhenyu](https://github.com/tzhenyu)")
         pdf_uploaded = st.sidebar.file_uploader("a",type="pdf",label_visibility="hidden")
 
-        st.sidebar.header("Set File Parameters")  
+        st.sidebar.header("Parameters")  
 
         min_contour_area = st.sidebar.slider("Contour Area", 0, 300000, 40000)
         erode_iterations = st.sidebar.slider("Erosion Iterations", 1, 15, 9)
