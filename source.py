@@ -1,9 +1,15 @@
 import streamlit as st
 import pdf2image
-from io import BytesIO
+import io
+from reportlab.pdfgen.canvas import Canvas
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.utils import ImageReader
 import cv2
 import numpy as np
 from PIL import Image
+
+c = Canvas("myreport.pdf", pagesize=A4)
+
 
 def contourImg(image, contours, min_contour_area):
     output_image = image.copy()
@@ -22,6 +28,7 @@ def contourImg(image, contours, min_contour_area):
     cv2.drawContours(output_image, significant_contours, -1, (0,255,255), 1)
     
     cropped_images = []
+    final_cropped = []
     for contour in significant_contours:
         x, y, w, h = cv2.boundingRect(contour)
         # Draw rectangle on output image
@@ -30,7 +37,40 @@ def contourImg(image, contours, min_contour_area):
         cropped_img = image[y:y+h, 0:x+2000]
         cropped_images.append(cropped_img)
     cropped_images.reverse()
+
+    for final_image in cropped_images:
+        pil_image = Image.fromarray(final_image)   
+        # final_image.append(pil_image)
+        
+    img_buffer = io.BytesIO()
+    pil_image.save(img_buffer, format='PNG')
+    img_buffer.seek(0)
+    reportlab_image = ImageReader(img_buffer)
+    img_width, img_height = reportlab_image.getSize()
+
+    x = 50  # Left margin
+    y = 750  # Top margin (ReportLab coordinates start from bottom)
+    max_height = 0
+    current_x = x
+
+    if current_x + img_width > 562:  # 612 - 50 right margin
+        current_x = x  # Reset to left margin
+        y -= (max_height + 200)  # Move down by max height of previous row plus gap
+        max_height = 0  # Reset max height for new row
     
+    # Check if we need a new page
+    if y < 50:  # Bottom margin
+        c.showPage()  # Start new page
+        y = 750  # Reset to top of new page
+
+    # Draw the image
+    c.drawImage(reportlab_image, 
+                current_x, y - img_height,  # Subtract image height since ReportLab draws from bottom-left
+                width=img_width, 
+                height=img_height)
+    # c.drawImage(reportlab_image, 100, 500, width=img_width, height=img_height)
+
+
     return output_image, significant_contours, cropped_images
 
 def process_image(image, erode_iterations):
@@ -41,6 +81,7 @@ def process_image(image, erode_iterations):
 
 def on_slider_change():
     st.session_state.slider_changed = True
+
 
 def main():
     st.set_page_config(layout="wide")
@@ -57,9 +98,6 @@ def main():
         if 'cropped_images' not in st.session_state:
             st.session_state.cropped_images = []
         
-        # Create a placeholder for the image
-        image_placeholder = st.empty()
-        
         # File uploader
         pdf_uploaded = st.file_uploader("Select a file", type="pdf")
         
@@ -72,13 +110,12 @@ def main():
         
         erode_iterations = st.sidebar.slider(
             "Erosion Iterations",
-            1, 20, 9,
+            1, 11, 9,
             on_change=on_slider_change
         )
         
         crop_button = st.sidebar.button("Crop Images")
         
-        # Process PDF when uploaded
         if pdf_uploaded is not None:
             if 'current_pdf' not in st.session_state or st.session_state.current_pdf != pdf_uploaded.name:
                 st.session_state.current_pdf = pdf_uploaded.name
@@ -95,6 +132,8 @@ def main():
             
             # Process and display each page
             all_cropped_images = []
+            final_image = []
+
             for idx, page_data in enumerate(st.session_state.processed_pages):
                 # Create a placeholder for each page
                 page_placeholder = st.empty()
@@ -125,5 +164,8 @@ def main():
                 for idx, img in enumerate(st.session_state.cropped_images):
                     st.image(img, use_container_width=True)
 
+            
+        c.save()
 if __name__ == '__main__':
     main()
+    print("Reload complete!")
