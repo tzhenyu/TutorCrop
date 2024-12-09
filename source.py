@@ -130,9 +130,9 @@ def main():
 
         st.sidebar.header("Parameters")  
 
-        min_contour_area = st.sidebar.slider("Contour Area", 0, 300000, 40000)
-        erode_iterations = st.sidebar.slider("Erosion Iterations", 1, 15, 9)
-        vertical_gap = st.sidebar.slider("Vertical Gap (points)", 50, 300, 150)
+        min_contour_area = st.sidebar.slider("Crop Area", 0, 300000, 40000)
+        erode_iterations = st.sidebar.slider("Detection Width", 1, 15, 9)
+        vertical_gap = st.sidebar.slider("Vertical Gap", 50, 300, 150)
         
         crop_button = st.sidebar.button("3. Crop Images")
         
