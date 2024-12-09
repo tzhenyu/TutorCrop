@@ -17,6 +17,7 @@ There are 3 sliders you can control:
 After adjusting it, click "Crop image" and it will generate a PDF! 
 
 Before and after
-![Before](https://s13.gifyu.com/images/SJcnR.jpg)
-![After](https://s13.gifyu.com/images/SJcn8.jpg)
-
+<p float="left">
+  <img src="https://s13.gifyu.com/images/SJcnR.jpg" width="100" />
+  <img src="https://s13.gifyu.com/images/SJcn8.jpg" width="100" /> 
+</p>
