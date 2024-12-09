@@ -10,9 +10,9 @@ This repo integrates with streamlit platform for easier use.
 ### How to use
 ![Video](https://s7.gifyu.com/images/SJcdD.gif)
 - There are 3 sliders you can control:
-- Detection width: Draw the blue colored contour line around text and figure. It adjusts the width
-- Crop Area: Crop detection area, there will be a green line, which will be cropped. You can adjust this slider to adjust which part to crop.
-- Vertical Gap: Adjusts the gap between each questions
+    - Detection width: Draw the blue colored contour line around text and figure. It adjusts the width
+    - Crop Area: Crop detection area, there will be a green line, which will be cropped. You can adjust this slider to adjust which part to crop.
+    - Vertical Gap: Adjusts the gap between each questions
 
 After adjusting it, click "Crop image" and it will generate a PDF! 
 
