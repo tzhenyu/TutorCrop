@@ -7,7 +7,7 @@ from reportlab.lib.utils import ImageReader
 from reportlab.lib.pagesizes import A4
 import pdf2image
 import streamlit as st
-
+import time
 def create_pdf_with_crops_in_memory(cropped_images, vertical_spacing=100):
     # Create an in-memory buffer
     pdf_buffer = io.BytesIO()
@@ -86,7 +86,7 @@ def contourImg(image, contours, min_contour_area):
     for contour in significant_contours:
         x, y, w, h = cv2.boundingRect(contour)
         # Draw rectangle on output image
-        cv2.rectangle(output_image, (0, y), (x + 2000, y + h), (0, 255, 0), 3)
+        cv2.rectangle(output_image, (0, y), (x + 5000, y + h), (0, 255, 0), 3)
         # Crop the region
         cropped_img = image[y:y+h, 0:x+2000]
         cropped_images.append(cropped_img)
@@ -111,12 +111,10 @@ def process_image(image, erode_iterations):
 def main():
     st.set_page_config(page_title="Tutorial PDF Cropper",layout="wide",initial_sidebar_state="expanded")
 
-
+    warning = st.container()
     col1, col2 = st.columns(2)
-
     with col1:
         
-        st.header("Preview")
         # Initialize session states
         if 'processed_pages' not in st.session_state:
             st.session_state.processed_pages = []
@@ -126,11 +124,12 @@ def main():
         # File uploader
         
         # Sliders for parameters
-        st.sidebar.title("Tutorial Cropper")
-        st.sidebar.header("1. Select File")
-        pdf_uploaded = st.sidebar.file_uploader("a", type="pdf",label_visibility="hidden")
+        st.sidebar.title("Tutorial PDF Cropper")
+        st.sidebar.write("Made by [tzhenyu](https://github.com/tzhenyu)")
+        pdf_uploaded = st.sidebar.file_uploader("a",type="pdf",label_visibility="hidden")
 
-        st.sidebar.header("2. Set Parameters")
+        st.sidebar.header("Set File Parameters")  
+
         min_contour_area = st.sidebar.slider("Contour Area", 0, 300000, 40000)
         erode_iterations = st.sidebar.slider("Erosion Iterations", 1, 15, 9)
         vertical_gap = st.sidebar.slider("Vertical Gap (points)", 50, 300, 150)
@@ -138,6 +137,8 @@ def main():
         crop_button = st.sidebar.button("3. Crop Images")
         
         if pdf_uploaded is not None:
+            st.header("Preview")
+
             # Process PDF pages
             if 'current_pdf' not in st.session_state or st.session_state.current_pdf != pdf_uploaded.name:
                 st.session_state.current_pdf = pdf_uploaded.name
@@ -169,25 +170,29 @@ def main():
             # When crop button is clicked
 
     with col2:
-        st.sidebar.divider()
-        if crop_button:
-            st.session_state.cropped_images = all_cropped_images
-            # Create PDF with cropped images in memory
-            pdf_buffer = create_pdf_with_crops_in_memory(all_cropped_images, vertical_gap)
-            
-            # Add a download button
-            st.sidebar.success("Image Cropped Successfully!")
-            st.sidebar.download_button(
-                label="Download PDF",
-                data=pdf_buffer,
-                file_name=f"Cropped + {pdf_uploaded.name}",
-                mime="application/pdf"
-            )
-            
-        if st.session_state.cropped_images:
-            st.header("Cropped Image Preview")
-            for img in st.session_state.cropped_images:
-                st.image(img, use_container_width=True)
+        try:
+            if crop_button:
+                # Create PDF with cropped images in memory
+                st.session_state.cropped_images = all_cropped_images
+                pdf_buffer = create_pdf_with_crops_in_memory(all_cropped_images, vertical_gap)
+                
+                # Add a download button
+                warning.success("Image Cropped Successfully!")
+                warning.download_button(
+                    label="Download PDF",
+                    data=pdf_buffer,
+                    file_name=f"Cropped {pdf_uploaded.name}",
+                    mime="application/pdf"
+                )
+                
+            if st.session_state.cropped_images:
+                st.header("Cropped Image Preview")
+                
+                for img in st.session_state.cropped_images:
+                    st.image(img, use_container_width=True)
+
+        except(AttributeError,UnboundLocalError):
+            warning.warning("You haven't add any file yet!")
 
 
 
