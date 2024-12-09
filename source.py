@@ -79,7 +79,7 @@ def contourImg(image, contours, min_contour_area):
     ]
 
     # Draw contours for visualization
-    cv2.drawContours(output_image, significant_contours, -1, (0,255,255), 1)
+    cv2.drawContours(output_image, contours, -1, (0,255,255), 1)
     
     # Store cropped images
     cropped_images = []
@@ -98,8 +98,13 @@ def contourImg(image, contours, min_contour_area):
 
 def process_image(image, erode_iterations):
     """Process image with erosion and find contours."""
+
+    _,thresholded_image = cv2.threshold(image, 127, 255, cv2.THRESH_BINARY)
+
+
     kernel = np.ones((5,5), np.uint8)
-    erode = cv2.erode(image, kernel, iterations=erode_iterations)
+    erode = cv2.erode(thresholded_image, kernel, iterations=erode_iterations)
+
     cnts, hierarchy = cv2.findContours(erode, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
     return cnts
 
@@ -123,11 +128,11 @@ def main():
         # Sliders for parameters
         st.sidebar.title("Tutorial Cropper")
         st.sidebar.header("1. Select File")
-        pdf_uploaded = st.sidebar.file_uploader("", type="pdf")
+        pdf_uploaded = st.sidebar.file_uploader("a", type="pdf",label_visibility="hidden")
 
         st.sidebar.header("2. Set Parameters")
-        min_contour_area = st.sidebar.slider("Contour Area", 36000, 300000, 40000)
-        erode_iterations = st.sidebar.slider("Erosion Iterations", 1, 11, 9)
+        min_contour_area = st.sidebar.slider("Contour Area", 0, 300000, 40000)
+        erode_iterations = st.sidebar.slider("Erosion Iterations", 1, 15, 9)
         vertical_gap = st.sidebar.slider("Vertical Gap (points)", 50, 300, 150)
         
         crop_button = st.sidebar.button("3. Crop Images")
@@ -165,7 +170,6 @@ def main():
 
     with col2:
         st.sidebar.divider()
-
         if crop_button:
             st.session_state.cropped_images = all_cropped_images
             # Create PDF with cropped images in memory
@@ -176,7 +180,7 @@ def main():
             st.sidebar.download_button(
                 label="Download PDF",
                 data=pdf_buffer,
-                file_name="cropped_images.pdf",
+                file_name=f"Cropped + {pdf_uploaded.name}",
                 mime="application/pdf"
             )
             
@@ -189,4 +193,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
