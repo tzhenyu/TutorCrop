@@ -5,7 +5,6 @@ import io
 from reportlab.pdfgen import canvas
 from reportlab.lib.utils import ImageReader
 from reportlab.lib.pagesizes import A4
-import pdf2image
 import streamlit as st
 import uuid
 from pdf2image import convert_from_bytes
@@ -110,7 +109,8 @@ def process_image(image, erode_iterations):
     cnts, hierarchy = cv2.findContours(erode, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
     return cnts
 
-
+def save_checkbox_state(key):
+    st.session_state[key] = st.session_state.get(key, False)
 
 def main():
     st.set_page_config(page_title="Tutorial PDF Cropper", layout="wide", initial_sidebar_state="expanded")
@@ -241,7 +241,26 @@ def main():
                                 for img in st.session_state.page_to_cropped_images[page_number + 1]:
                                         with st.container(border=True):
                                             st.image(img, use_container_width=True)
-                                            st.checkbox("image", value=True, key=uuid.uuid4())
+                                            st.checkbox("Exclude", value=False, key=uuid.uuid4())
+
+                                
+                            # if page_number + 1 in st.session_state.page_to_cropped_images:
+                            #     for idx, img in enumerate(st.session_state.page_to_cropped_images[page_number + 1]):
+                            #         # Unique key for each checkbox, combining page number and index
+                            #         unique_key = f"exclude_image_page_{page_number + 1}_img_{idx}"
+                                    
+                            #         # Ensure the state is initialized for the checkbox
+                            #         if unique_key not in st.session_state:
+                            #             st.session_state[unique_key] = False
+
+                            #         with st.container():
+                            #             st.image(img, use_container_width=True)
+                            #             st.checkbox(
+                            #                 "Exclude this image",
+                            #                 value=st.session_state[unique_key],
+                            #                 key=unique_key,
+                            #                 on_change=lambda key=unique_key: save_checkbox_state(key)
+                            #             )
         except (AttributeError, UnboundLocalError):
             warning.warning("You haven't added any file yet!")
 
