@@ -71,7 +71,7 @@ def contourImg(image, contours, min_contour_area):
     for contour in significant_contours:
         x, y, w, h = cv2.boundingRect(contour)
         # Draw rectangle on output image
-        cv2.rectangle(output_image, (0, y), (x + 5000, y + h), (0, 255, 0), 3)
+        cv2.rectangle(output_image, (x+w, y), (x , y + h), (0, 255, 0), 3)
         # Crop the region
         cropped_img = image[y:y+h, 0:x+2000]
         cropped_images.append(cropped_img)
