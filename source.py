@@ -10,62 +10,46 @@ import uuid
 from pdf2image import convert_from_bytes
 
 def create_pdf_with_crops_in_memory(cropped_images, vertical_spacing=100):
-    # Create an in-memory buffer
     pdf_buffer = io.BytesIO()
-    
-    # Create the PDF canvas in the buffer
     c = canvas.Canvas(pdf_buffer, pagesize=A4)
     
-    # Page dimensions (A4 size in points)
     page_width, page_height = A4
     left_margin = 0
-    max_image_width = page_width - 2 * left_margin  # Allow for margins
-
-    # Start position from top of first page
-    current_y = page_height - 50  # 50-point margin at the top
+    max_image_width = page_width - 2 * left_margin
+    bottom_margin = 150  # Minimum space needed at bottom
+    
+    current_y = page_height - 50  # Start position
     
     for img in cropped_images:
-        # Convert OpenCV image (BGR) to RGB for PIL
         rgb_image = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        
-        # Convert to PIL Image
         pil_image = Image.fromarray(rgb_image)
         
-        # Convert to ReportLab format
         img_buffer = io.BytesIO()
         pil_image.save(img_buffer, format='PNG')
         img_buffer.seek(0)
         reportlab_image = ImageReader(img_buffer)
         
-        # Get original image dimensions
         img_width, img_height = reportlab_image.getSize()
-        
-        # Calculate the scale factor to fit the image within page width
         scale_factor = min(1, max_image_width / img_width)
         scaled_width = img_width * scale_factor
         scaled_height = img_height * scale_factor
         
-        # Check if we need a new page
-        if current_y - scaled_height < 50:  # Leave 50 points margin at bottom
+        # Check if image plus bottom margin fits on current page
+        if current_y - scaled_height - bottom_margin < 0:
             c.showPage()
-            current_y = page_height - 50  # Reset to top of new page
+            current_y = page_height - 50
         
-        # Calculate image position
         image_y = current_y - scaled_height
-        
-        # Draw the image
         c.drawImage(reportlab_image,
-                    left_margin,
-                    image_y,
-                    width=scaled_width,
-                    height=scaled_height)
+                   left_margin,
+                   image_y,
+                   width=scaled_width,
+                   height=scaled_height)
         
-        # Move down by image height plus spacing
         current_y = image_y - vertical_spacing
     
-    # Save the PDF to the buffer
     c.save()
-    pdf_buffer.seek(0)  # Move to the beginning of the buffer
+    pdf_buffer.seek(0)
     return pdf_buffer
 
 def contourImg(image, contours, min_contour_area):
@@ -112,8 +96,8 @@ def process_image(image, erode_iterations):
 
 
 def main():
-    st.set_page_config(layout="centered")
-    st.markdown("## Tutorial Cropper")
+    st.set_page_config(layout="centered", page_title="TutorCrop")
+    st.markdown("## TutorCrop")
     st.markdown("By [tzhenyu](https://github.com/tzhenyu)")
 
     file_uploader = st.file_uploader("Upload PDF", type="pdf", label_visibility="hidden")
