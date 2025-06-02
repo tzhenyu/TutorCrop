@@ -6,7 +6,6 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.utils import ImageReader
 from reportlab.lib.pagesizes import A4
 import streamlit as st
-import uuid
 from pdf2image import convert_from_bytes
 
 def create_pdf_with_crops_in_memory(cropped_images, vertical_spacing=100):
@@ -87,7 +86,7 @@ def process_image(image, erode_iterations):
     _,thresholded_image = cv2.threshold(image, 127, 255, cv2.THRESH_BINARY)
 
 
-    kernel = np.ones((5,5), np.uint8)
+    kernel = np.ones((5,10), np.uint8)
     erode = cv2.erode(thresholded_image, kernel, iterations=erode_iterations)
 
     cnts, hierarchy = cv2.findContours(erode, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
@@ -124,7 +123,7 @@ def main():
 
                 col1, col2 = st.columns(2)
                 with col1:
-                    min_contour_area = st.slider("Detected Area (green)", 0, 300000, 40000)
+                    min_contour_area = st.slider("Detected Area (green)", 0, 300000, 23000)
                 with col2:
                     erode_iterations = st.slider("Detected Width (blue)", 1, 20, 9)
 
